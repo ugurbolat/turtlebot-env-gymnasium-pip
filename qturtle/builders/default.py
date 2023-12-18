@@ -123,3 +123,18 @@ def default_builder(world, gui=False):
     )
 
     return builder.get()
+
+# here defining the environments with default wrapper (3x3)
+def create_qturtle_env_3x3():
+    #return default_builder("3x3", gui=True)
+    return default_builder("3x3", gui=False)
+
+# here defining the environments with default wrapper (4x4)
+def create_qturtle_env_4x4():
+    #return default_builder("4x4", gui=True)
+    return default_builder("4x4", gui=False)
+
+# here defining the environments with default wrapper (5x5)
+def create_qturtle_env_5x5():
+    #return default_builder("5x5", gui=True)
+    return default_builder("5x5", gui=False)

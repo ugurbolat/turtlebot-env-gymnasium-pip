@@ -1,5 +1,5 @@
-from gym.spaces import Discrete
-
+#from gym.spaces import Discrete
+from gymnasium.spaces import Discrete
 
 class StepControl:
     def __init__(self, base_speed, steps, seed=None):

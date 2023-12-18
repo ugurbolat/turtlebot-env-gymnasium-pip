@@ -1,7 +1,8 @@
 import gym
-
+#from gym.spaces import Box
+from gymnasium.spaces import Box
 from ..sim import close_pybullet
-
+import numpy as np
 
 class GymEnvironment(gym.Env):
     """ Qturtle composable environment following the OpenAI Gym API """
@@ -46,8 +47,15 @@ class GymEnvironment(gym.Env):
 
         self.collisions = False
 
+        # NOTE StepControl is modified to return a gymnasium space instead of gym space
         self.action_space = control.get_action_space()
-
+        # TODO min-max values are set to -inf and inf for a now
+        #self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=(3,), dtype=np.float32)
+        self.observation_space = Box(
+            low=np.array([-float('inf'), -float('inf'), -np.pi]),
+            high=np.array([float('inf'), float('inf'), np.pi]),
+            shape=(3,)
+        )
         self.steps = 0
 
     def step(self, action):
@@ -70,14 +78,23 @@ class GymEnvironment(gym.Env):
         self._run_sim_steps(steps)
 
         next_state = [list(self.turtlebot.get_pos_and_orientation())]
-        done = self.termination(next_state, self.collisions)
+        next_state = np.array(next_state , dtype=np.float32)
+        #done = self.termination(next_state, self.collisions)
+        terminated = self.termination(next_state, self.collisions)
         reward = self.reward(next_state, self.collisions)
+        # convert next_state to numpy array
+        #next_state = np.array(next_state)
 
         self.steps += 1
 
-        return next_state, reward, done, {}
+        # gym version
+        #return next_state, reward, done, {}
+        # gymnasium version
+        info = {}  # Update this based on your environment
+        # NOTE trucated is set to False
+        return next_state, reward, terminated, False, info
 
-    def reset(self, random=False):
+    def reset(self, seed=None, random=False, options=None):
         """Reset environment to starting state
 
         Parameters
@@ -90,6 +107,10 @@ class GymEnvironment(gym.Env):
         Any
             The starting state of the robot
         """
+
+        super().reset(seed=seed)
+
+        # TODO integrate seed and random (e.g., self.world.seed(seed))
         if random:
             pos, angle = self.world.sample_start()
             self.turtlebot.reset(pos, angle)
@@ -100,7 +121,15 @@ class GymEnvironment(gym.Env):
         self.reward.reset()
         self.steps = 0
 
-        return  [list(self.turtlebot.get_pos_and_orientation())]
+        # gym version
+        #return  [list(self.turtlebot.get_pos_and_orientation())]
+
+        # gymnaisum version
+        observation = [list(self.turtlebot.get_pos_and_orientation())]
+        observation = np.array(observation , dtype=np.float32)
+        info = {}  # Update this based on your environment
+
+        return observation, info
 
     def render(self, *_):
         """ Only exists for API compatibility with OpenAI gym """
